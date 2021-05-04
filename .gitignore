@@ -1,0 +1,6 @@
+__pycache__
+Pipfile*
+.vscode
+.venv
+*.pyc
+tests/configuration.py

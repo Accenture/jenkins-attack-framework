@@ -1,0 +1,59 @@
+#! /bin/bash
+
+function clean_up {
+    autoflake -i -r --remove-unused-variables --expand-star-imports --exclude ".venv,.git" . 2>&1
+    isort . 2>&1
+    black . 2>&1
+    flake8 --ignore "S105,S406,E501,E203,T001,I004,W291,W292,W293,W503,I004,B006,S110,ECE001,IF100,R503,N802,I900,B012,R504,B010" libs/ 2>&1
+}
+
+if [ $# -gt 0 ] && [ "$1" == "--install" ]; then
+    if [ "$(id -u)" == "0" ]; then
+        apt-get update
+        apt-get install -y python3 python3-pip
+        pip3 install -U pip
+        pip3 install pipenv
+
+        rm Pipfile >/dev/null 2>&1
+        rm Pipfile.lock >/dev/null 2>&1
+        rm -rf .venv >/dev/null 2>&1
+
+        if ! [ $# -gt 1 ]; then
+        echo -e "\n\nNow that you have installed the dependencies that require root, rerun this script as your normal user.\n\n"
+            echo -e "If you want to continue as root, re-run and pass the additional argument of \"--asroot\" to this script\n\n"
+        fi
+    fi
+
+    if ! [ "$(id -u)" == "0" ] || [ $# -gt 1 ]; then
+        if ! [ -x "$(command -v python3)" ]; then
+            echo -e 'Error: You must have python3 installed.\nDid you run this script with root originally?\nIf not, do that now.'
+            exit -1
+        fi
+
+        if ! [ -x "$(command -v pip3)" ]; then
+            echo -e 'Error: You must have python3-pip installed.\nDid you run this script with root originally?\nIf not, do that now.'
+            exit -1
+        fi
+
+        pythonver=$(python3 -c "import platform; print('.'.join(platform.python_version().split('.')[:2]))")
+
+        export PIPENV_VENV_IN_PROJECT=1
+        pipenv --python "${pythonver}"
+        pipenv install -r requirements.txt
+    fi
+
+elif [ $# -gt 0 ] && [ "$1" == "--check_install" ]; then
+    pip3 install black isort autoflake flake8-awesome
+
+elif [ $# -gt 0 ] && [ "$1" == "--check" ]; then
+    clean_up
+    python3 -m unittest discover 2>&1
+elif [ $# -gt 0 ] && [ "$1" == "--cleanup" ]; then
+    clean_up
+else
+    pipenv run python jaf.py "$@"
+fi
+
+
+
+
