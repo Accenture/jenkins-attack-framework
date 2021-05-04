@@ -1,0 +1,34 @@
+stages:
+  - test
+
+black:
+  stage: test
+  image: python:3.6
+  before_script:
+    - pip install black
+  script:
+    - black . --check --diff --py36
+
+isort:
+  stage: test
+  image: python:3.6
+  before_script:
+    - pip install isort
+  script:
+    - isort . --check --diff --py 36
+
+autoflake:
+  stage: test
+  image: python:3.6
+  before_script:
+    - pip install autoflake
+  script:
+    - autoflake -c -r --remove-unused-variables .
+
+flake8:
+  stage: test
+  image: python:3.6
+  before_script:
+    - pip install flake8-awesome
+  script:
+    - flake8 --ignore "E501,E203,T001,I004,W291,W292,W293,W503,I004,B006,S110,ECE001,IF100,R503,N802,I900,B012,R504,B010" libs/
