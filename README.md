@@ -702,3 +702,8 @@ Fixed some authentication bugs.
 ###	   1.0
 
 Due to the full re-write/rebranding of Jenkins Miner, this is now version 1.0 of the Jenkins Attack Framework.
+
+Credit
+======
+
+This project was originally developed by Shelby Spencer (@shellster) with the gracious support, funding, and resources of Accenture.  The project is wholly owned by Accenture, but is licensed under the MIT license (see LICENSE file)
