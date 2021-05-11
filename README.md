@@ -102,7 +102,7 @@ HTTP Request Timeouts default to 30 seconds. If you would like a shorter or long
 
 For certain multi-request methods (`ConsoleOutput`, `AccessCheck`, or `WhoAmI`), the number of threads (and thus number of simultaneous requests) can be configured. By default 4 threads are used. To specify a different number of threads pass the `-t` option.
 
-For the `RunCommand`, `RunJob`, and `RunScript` methods, in addition to setting a total request timeout, you may pass the `-x` option to explictly not wait for the request to return. This can be valuable when starting a SOCKS Proxy or similar long running task.
+For the `RunCommand`, `RunJob`, and `RunScript` methods, in addition to setting a total request timeout, you may pass the `-x` option to explicitly not wait for the request to return. This can be valuable when starting a SOCKS Proxy or similar long running task.
 
 
 ### AccessCheck
@@ -319,7 +319,7 @@ Should be self explanatory, but this does require administrative credentials wit
 
 ### DumpCredsViaJob
 
-Dump credentials by creating a Job and explictly enumerating echoing out all the credentials that are
+Dump credentials by creating a Job and explicitly enumerating echoing out all the credentials that are
 stored and accessible to the user. These credentials are then Base64 encoded so as to prevent Jenkins from
 redacting them.  The credentials are retrieved and formatted. User must have at least Job creation privileges.
 
