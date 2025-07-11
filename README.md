@@ -7,7 +7,7 @@ This project can currently perform the following tasks:
 
 * **AccessCheck:** Test credentials and provide a rough overview of their access levels
 
-* **ConsoleOutput:** Dump the console output of the last build of every job on the server (Can be Gigabytes of data, but good for finding credentials)
+* **ConsoleOutput:** Dump the console output of builds from every job on the server (Can be Gigabytes of data, but good for finding credentials). Now supports failed builds and multiple build attempts.
 
 * **CreateAPIToken:** Creates an API Token for the current user (Or another user if you have administrative credentials)
 
@@ -143,16 +143,17 @@ This method provides a number of heuristic checks for access levels which are us
 
 ### ConsoleOutput
 
-This method dumps the console output for the last build of every job that the user can see. You need at least job viewing privileges which is not always possible to determine. This can and often does result in gigabytes (or even terabytes) of output.
+This method dumps the console output for builds of every job that the user can see. You need at least job viewing privileges which is not always possible to determine. This can and often does result in gigabytes (or even terabytes) of output. The plugin also supports retrieving console output from failed builds and can try multiple recent builds if the last build fails.
 
 	usage: jaf.py ConsoleOutput [-h] -s <Server> [-u <User-Agent>] [-n <Timeout>]
 				[-o Output File] [-t <Threads>]
 				[-a [<User>:[<Password>|<API Token>]|<Cookie>]]
+				[-b <Number>] [-f]
 
 	Jenkins Attack Framework
 
 	positional arguments:
-	ConsoleOutput         Get Latest Console Output from All Jenkins Jobs
+	ConsoleOutput         Get Console Output from Jenkins Jobs (including failed builds)
 
 	optional arguments:
 	-h, --help            show this help message and exit
@@ -172,8 +173,8 @@ This method dumps the console output for the last build of every job that the us
 							User + Password or API Token, or full JSESSIONID
 							cookie string
 	-b <Number>, --builds <Number>
-                        	Number of recent builds to try if the last build fails (default: 3)
-  	-f, --failed          	Include console output from failed builds (default: only successful builds)
+							Number of recent builds to try if the last build fails (default: 3, use -1 for all builds)
+	-f, --failed          Include console output from failed builds (default: only successful builds)
 
 
 ### CreateAPIToken

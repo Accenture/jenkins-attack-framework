@@ -101,7 +101,7 @@ class ConsoleOutput(BasePlugin):
                 # First, try to get job info to see if there are any builds
                 job_info = server.get_job_info(job["fullname"])
                 
-                if not job_info.get("builds") or len(job_info["builds"]) == 0:
+                if job_info.get("builds"):
                     # No builds exist for this job
                     self.results_queue.put(None)
                     continue
@@ -118,7 +118,12 @@ class ConsoleOutput(BasePlugin):
                     build_number = "lastBuild"
                 except jenkinslib.JenkinsException:
                     # If lastBuild fails, try the most recent build numbers
-                    for build in job_info["builds"][:build_attempts]:
+                    builds_to_try = job_info["builds"]
+                    if build_attempts > 0:
+                        builds_to_try = job_info["builds"][:build_attempts]
+                    # If build_attempts is -1, try all builds
+                    
+                    for build in builds_to_try:
                         try:
                             # Check if we should skip failed builds
                             if not include_failed:
@@ -160,7 +165,7 @@ class ConsoleOutputParser:
             "-b",
             "--builds",
             metavar="<Number>",
-            help="Number of recent builds to try if the last build fails (default: 3)",
+            help="Number of recent builds to try if the last build fails (default: 3, use -1 for all builds)",
             action="store",
             dest="build_attempts",
             type=int,
@@ -185,7 +190,7 @@ class ConsoleOutputParser:
         self._validate_output_file(args)
         
         # Validate build_attempts
-        if args.build_attempts < 1 or args.build_attempts > 50:
-            self.logging.fatal("Build attempts must be between 1 and 50")
+        if args.build_attempts < -1 or args.build_attempts == 0:
+            self.logging.fatal("Build attempts must be -1 (for all builds) or a positive number")
 
         return self._handle_authentication(args)
