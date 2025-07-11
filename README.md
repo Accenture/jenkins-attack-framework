@@ -139,6 +139,9 @@ This method provides a number of heuristic checks for access levels which are us
 	-c <Credential File>, --credentialfile <Credential File>
 							Credential File ("-" for stdin). Creds in form
 							"<User>:<Password>" or "<User>:<API Token>"
+	-b <Number>, --builds <Number>
+                        	Number of recent builds to try if the last build fails (default: 3)
+  	-f, --failed          	Include console output from failed builds (default: only successful builds)
 
 
 ### ConsoleOutput
