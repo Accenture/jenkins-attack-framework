@@ -128,6 +128,37 @@ class ConsoleOutputParserTest(unittest.TestCase, TestFramework):
             ],
         )
 
+    def test_build_attempts_argument(self):
+        """Test the --builds argument"""
+
+        self.basic_test_harness(
+            ["jaf.py", self.testcommand, "-s", server, "-a", user_admin, "-b", "5"],
+            [r"Job: "]
+        )
+
+    def test_include_failed_argument(self):
+        """Test the --failed argument"""
+
+        self.basic_test_harness(
+            ["jaf.py", self.testcommand, "-s", server, "-a", user_admin, "-f"],
+            [r"Job: "]
+        )
+
+    def test_invalid_build_attempts(self):
+        """Test invalid build attempts value"""
+
+        self.basic_test_harness(
+            ["jaf.py", self.testcommand, "-s", server, "-a", user_admin, "-b", "0"],
+            [r"Build attempts must be between 1 and 50"],
+            1,
+        )
+
+        self.basic_test_harness(
+            ["jaf.py", self.testcommand, "-s", server, "-a", user_admin, "-b", "51"],
+            [r"Build attempts must be between 1 and 50"],
+            1,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
