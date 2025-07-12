@@ -651,6 +651,10 @@ In the case of a LDAP/Domain-Connected Jenkins, this also includes all domain gr
 
 This should be kept up to date with the lastest version info at the top.
 
+###    1.6.0
+
+Added `--builds` option for ConsoleOutput courtesy of @praetorian-thacien
+
 ###    1.5.2
 
 Added a bit more postive confirmation when using `RunJob` with the `-g` or `-x` options.
