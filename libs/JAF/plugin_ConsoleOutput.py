@@ -98,10 +98,52 @@ class ConsoleOutput(BasePlugin):
                 break
 
             try:
-                console = server.get_build_console_output(job["folder"], "lastBuild")
-                output = "Job: %s\n\n" % (job["url"])
-                output = output + console
-                self.results_queue.put(output)
+                # First, try to get job info to see if there are any builds
+                job_info = server.get_job_info(job["fullname"])
+                
+                if job_info.get("builds"):
+                    # No builds exist for this job
+                    self.results_queue.put(None)
+                    continue
+                
+                # Try to get console output from the last build
+                console = None
+                build_number = None
+                build_attempts = getattr(self.args, 'build_attempts', 3)
+                include_failed = getattr(self.args, 'include_failed', False)
+                
+                # First try lastBuild
+                try:
+                    console = server.get_build_console_output(job["folder"], "lastBuild")
+                    build_number = "lastBuild"
+                except jenkinslib.JenkinsException:
+                    # If lastBuild fails, try the most recent build numbers
+                    builds_to_try = job_info["builds"]
+                    if build_attempts > 0:
+                        builds_to_try = job_info["builds"][:build_attempts]
+                    # If build_attempts is -1, try all builds
+                    
+                    for build in builds_to_try:
+                        try:
+                            # Check if we should skip failed builds
+                            if not include_failed:
+                                build_info = server.get_build_info(job["fullname"], build["number"])
+                                if build_info.get("result") != "SUCCESS":
+                                    continue
+                            
+                            build_number = build["number"]
+                            console = server.get_build_console_output(job["folder"], build_number)
+                            break
+                        except jenkinslib.JenkinsException:
+                            continue
+                
+                if console:
+                    output = "Job: %s (Build: %s)\n\n" % (job["url"], build_number)
+                    output = output + console
+                    self.results_queue.put(output)
+                else:
+                    # No console output could be retrieved
+                    self.results_queue.put(None)
 
             except Exception:
                 print(job["folder"], "failed")
@@ -112,12 +154,33 @@ class ConsoleOutput(BasePlugin):
 
 class ConsoleOutputParser:
     def cmd_ConsoleOutput(self):
-        """Handles parsing of ConsoleOutput Subcommand arguments"""
+        """Handles parsing of ConsoleOutput SubCommand arguments"""
 
         self._create_contextual_parser(
-            "ConsoleOutput", "Get Latest Console Output from All Jenkins Jobs"
+            "ConsoleOutput", "Get Console Output from Jenkins Jobs (including failed builds)"
         )
         self._add_common_arg_parsers(allows_threading=True)
+
+        self.parser.add_argument(
+            "-b",
+            "--builds",
+            metavar="<Number>",
+            help="Number of recent builds to try if the last build fails (default: 3, use -1 for all builds)",
+            action="store",
+            dest="build_attempts",
+            type=int,
+            default=3,
+            required=False,
+        )
+
+        self.parser.add_argument(
+            "-f",
+            "--failed",
+            help="Include console output from failed builds (default: only successful builds)",
+            action="store_true",
+            dest="include_failed",
+            required=False,
+        )
 
         args = self.parser.parse_args()
 
@@ -125,5 +188,9 @@ class ConsoleOutputParser:
         self._validate_thread_number(args)
         self._validate_timeout_number(args)
         self._validate_output_file(args)
+        
+        # Validate build_attempts
+        if args.build_attempts < -1 or args.build_attempts == 0:
+            self.logging.fatal("Build attempts must be -1 (for all builds) or a positive number")
 
         return self._handle_authentication(args)
